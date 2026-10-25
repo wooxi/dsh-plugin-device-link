@@ -1,0 +1,65 @@
+{
+  "name": "dsh-plugin-device-link",
+  "version": "1.0.0",
+  "description": "Generate a tokenized login link for a new device directly from DSH Settings — no SSH or terminal needed.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer"
+      ],
+      "platform": "web"
+    },
+    "compatibility": {
+      "dsh": ">=0.2.1-rc.1 <0.3.0-0"
+    }
+  },
+  "engines": {
+    "node": ">=20",
+    "dsh": ">=0.2.1-rc.1 <0.3.0-0"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "prepublishOnly": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "device",
+    "login",
+    "token",
+    "web-ui"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wooxi/dsh-plugin-device-link.git"
+  },
+  "homepage": "https://github.com/wooxi/dsh-plugin-device-link#readme",
+  "bugs": {
+    "url": "https://github.com/wooxi/dsh-plugin-device-link/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
