@@ -14,6 +14,7 @@ const result = await build({
   platform: 'browser',
   target: 'es2022',
   jsx: 'automatic',
+  charset: 'utf8',
   external: ['react', 'react/jsx-runtime', '@deepseek-ai/dsh-client-ui-primitives'],
   legalComments: 'none',
 })

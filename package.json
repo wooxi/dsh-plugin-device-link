@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-device-link",
-  "version": "1.0.0",
-  "description": "Generate a tokenized login link for a new device directly from DSH Settings — no SSH or terminal needed.",
+  "version": "1.1.0",
+  "description": "A sidebar panel that mints tokenized login links for new devices — pick a public or LAN entry point, copy, and log in from a phone without touching a terminal.",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -22,7 +22,9 @@
     },
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-ui-renderer"
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar"
       ],
       "platform": "web"
     },

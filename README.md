@@ -1,12 +1,20 @@
 # dsh-plugin-device-link
 
-Generate a tokenized login link for a new device directly from DSH Settings — no SSH or terminal needed.
+A sidebar panel that mints tokenized login links for new devices — pick a public or LAN entry point, copy, and log in from a phone without touching a terminal.
 
 ## What it does
 
-Adds a **"New Device Login"** row to **Settings → General**. Click "Generate Link", and the plugin returns a fully-authenticated URL you can copy and open on any phone or tablet in your local network — no more digging through service logs.
+Adds a **新设备登录 (New Device Login)** entry to the sidebar rail. Open it to get a fully-authenticated URL you can paste into any phone or tablet browser.
 
-![Settings row screenshot](assets/settings-row.png)
+The panel exposes the decisions that used to live in shell flags:
+
+| Option | Why it matters |
+|---|---|
+| **Entry point** | When the server advertises a public domain *and* binds a LAN address, both links are offered. A phone on the same Wi-Fi usually wants the LAN one; a phone on mobile data needs the public one. |
+| **Reveal token** | The link is masked by default so it can be shown on screen or in a screenshot without leaking the token. |
+| **Remembered choice** | The last entry point and reveal setting persist in `localStorage`. |
+
+The entry picker only appears when more than one reachable root exists — a loopback-only deployment shows just the single link.
 
 ## Install
 
@@ -14,18 +22,23 @@ Adds a **"New Device Login"** row to **Settings → General**. Click "Generate L
 dsh plugin add dsh-plugin-device-link
 ```
 
-Then refresh the browser — the row appears automatically in Settings → General.
+Refresh the browser afterwards: the sidebar icon appears once the plugin loads.
 
 ## How it works
 
-- The plugin registers a `GET /api/dsh/device-link` route that sits behind DSH's existing cookie auth and Host/Origin fence. Only a logged-in browser can call it.
-- It reads the process-level launch token (generated once at startup via `crypto.randomBytes(32)`) and appends it as `?token=…` to the public URL configured at startup (`--public-url`).
-- The link is valid until the DSH process restarts (at which point a new token is issued).
+- `GET /api/dsh/device-link` returns every reachable entry as `{ links: [{ id, url, origin }] }`. It sits behind DSH's existing cookie auth and Host/Origin fence, so only a logged-in browser can call it.
+- Each URL is the process launch token appended as `?token=…` to a root the server actually serves:
+  - `public` — the advertised URL (`--public-url`, else the bind origin)
+  - `lan` — the bind origin, only when it is not loopback
+  - `local` — a loopback origin, offered alone when nothing wider is reachable
+- Duplicate origins collapse into one row, so a deployment with no `--public-url` shows a single link rather than the same address twice.
+- The token is process-scoped: a restart invalidates every previously generated link.
 
 ## Security notes
 
 - The link carries a token equivalent to full owner access. Do not share it with others.
-- Service restart invalidates the link immediately — regenerate it after a restart.
+- The panel masks the token by default; "显示完整令牌" reveals it for copying by hand.
+- A restart invalidates the link immediately — regenerate it afterwards.
 
 ## Compatibility
 
