@@ -1,14 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Button, Input, SegmentedControl, Switch } from '@deepseek-ai/dsh-client-ui-primitives'
 
 /**
- * New-device login links, as a standalone sidebar panel.
+ * New-device login links, as a settings section.
+ *
+ * Registered on the shell's `settings.section` slot, so it lands in the
+ * settings nav beside General / Models / Plugins and inherits that panel's
+ * typography and spacing. Every control below is a host primitive, which
+ * keeps the theme (light, dark, density, font family) in the host's hands.
  *
  * The host API answers every reachable entry point at once, so switching
  * between "public domain" and "LAN address" is a local choice — no second
  * round trip, and one launch token for all of them.
  */
 
-const PANEL_ID = 'device-link'
+const SECTION_ID = 'device-link'
+const STYLE_ID = 'dsh-plugin-device-link'
 const STORE_ENTRY = 'dsh.device-link.entry'
 const STORE_REVEAL = 'dsh.device-link.reveal'
 
@@ -25,128 +32,84 @@ const ENTRY_HINT = {
   local: '仅本机可访问',
 }
 
-const PAGE = {
-  height: '100%',
-  overflowY: 'auto',
-  boxSizing: 'border-box',
-  padding: '40px 24px 64px',
+/**
+ * The section column: max width and title/intro typography copied from the
+ * shipped sections (ui-agent-preset AgentPresetSection.module.css) so this
+ * page sits flush with its neighbours. No font-family anywhere — the host's
+ * body font is the intended typeface.
+ */
+const SECTION = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 12,
+  maxWidth: 720,
+  color: 'var(--dsw-alias-label-primary)',
 }
 
-const COLUMN = { maxWidth: 720, margin: '0 auto' }
-
-const HEADING = { margin: 0, fontSize: 20, lineHeight: '26px', fontWeight: 600 }
-const LEAD = {
-  margin: '8px 0 0',
-  color: 'var(--dsw-alias-label-secondary)',
+const TITLE = { margin: 0, fontSize: 18, fontWeight: 600 }
+const INTRO = {
+  margin: 0,
   fontSize: 13,
   lineHeight: '20px',
+  color: 'var(--dsw-alias-label-tertiary)',
 }
 
-const SECTION = { marginTop: 32 }
-const LEGEND = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: 'var(--dsw-alias-label-secondary)',
-  letterSpacing: '0.01em',
-  marginBottom: 8,
-}
-
-const CHOICE_LIST = {
-  border: '0.5px solid var(--dsw-alias-border-l2)',
-  borderRadius: 10,
-  overflow: 'hidden',
-}
-
-const choiceStyle = (selected, last) => ({
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: 12,
-  padding: '12px 14px',
-  cursor: 'pointer',
-  background: selected ? 'var(--dsw-alias-bg-l2)' : 'transparent',
-  borderBottom: last ? 'none' : '0.5px solid var(--dsw-alias-border-l2)',
-})
-
-const RADIO = { marginTop: 3, flex: 'none', cursor: 'pointer' }
-const CHOICE_BODY = { minWidth: 0, flex: 1, display: 'block' }
-const CHOICE_TITLE = { display: 'block', fontSize: 13, lineHeight: '18px' }
-
-const CHOICE_ORIGIN = {
-  display: 'block',
-  marginTop: 2,
-  fontSize: 12,
-  lineHeight: '18px',
-  color: 'var(--dsw-alias-label-secondary)',
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-}
-
-const CHOICE_HINT = {
-  display: 'block',
-  marginTop: 2,
-  fontSize: 12,
-  lineHeight: '18px',
-  color: 'var(--dsw-alias-label-secondary)',
-}
-
-const LINK_BOX = { display: 'flex', alignItems: 'stretch', gap: 8, marginTop: 12 }
-
-const INPUT = {
-  flex: 1,
-  minWidth: 0,
-  padding: '8px 10px',
-  fontSize: 12,
-  lineHeight: '18px',
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  color: 'inherit',
-  background: 'var(--dsw-alias-bg-base)',
-  border: '0.5px solid var(--dsw-alias-border-l2)',
-  borderRadius: 8,
-}
-
-const buttonStyle = (primary) => ({
-  flex: 'none',
-  padding: '8px 14px',
-  fontSize: 13,
-  lineHeight: '18px',
-  fontWeight: 500,
-  cursor: 'pointer',
-  borderRadius: 8,
-  border: primary ? 'none' : '0.5px solid var(--dsw-alias-border-l2)',
-  color: primary ? '#fff' : 'inherit',
-  background: primary ? 'var(--dsw-alias-accent, #3b6cf6)' : 'transparent',
-})
-
-const META_ROW = {
+/** Rows, copied from ui-settings-general DeveloperToolsRow.module.css. */
+const ROW = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: 16,
-  marginTop: 10,
-  flexWrap: 'wrap',
+  gap: 24,
+  padding: '16px 0',
+  borderBottom: '0.5px solid var(--dsw-alias-border-l2)',
 }
 
-const TOGGLE = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
+const ROW_LAST = { ...ROW, borderBottom: 'none', paddingBottom: 0 }
+const ROW_TITLE = { fontSize: 14, lineHeight: '20px' }
+const ROW_DESC = {
+  marginTop: 4,
   fontSize: 12,
+  lineHeight: '18px',
   color: 'var(--dsw-alias-label-secondary)',
-  cursor: 'pointer',
 }
+
+/** The link row stacks its control under the label so the URL keeps its width. */
+const FIELD = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+  padding: '16px 0',
+  borderBottom: '0.5px solid var(--dsw-alias-border-l2)',
+}
+
+const LINK_BOX = { display: 'flex', alignItems: 'center', gap: 8 }
 
 const FOOTNOTE = {
-  marginTop: 28,
-  paddingTop: 20,
-  borderTop: '0.5px solid var(--dsw-alias-border-l2)',
+  margin: 0,
   fontSize: 12,
   lineHeight: '20px',
-  color: 'var(--dsw-alias-label-secondary)',
+  color: 'var(--dsw-alias-label-tertiary)',
 }
 
-const ERROR = { marginTop: 10, fontSize: 12, color: 'var(--dsw-alias-label-error, #d33)' }
+const ERROR = { margin: 0, fontSize: 12, color: 'var(--dsw-alias-state-error-primary)' }
+
+/**
+ * The host primitive renders `<span><input/></span>` and leaves the width to
+ * the call site; other plugins pass a class for exactly this. One rule keeps
+ * the field full-width and monospaced without shipping a stylesheet.
+ */
+function ensureStyle() {
+  if (typeof document === 'undefined') return
+  if (document.querySelector(`style[data-plugin=${JSON.stringify(STYLE_ID)}]`) !== null) return
+  const style = document.createElement('style')
+  style.dataset.plugin = STYLE_ID
+  style.textContent =
+    // `flex: 1`, not `width: 100%`: the field shares a flex row with its copy
+    // button and must claim the leftover space without pushing the button out.
+    '.dsh-device-link-input{box-sizing:border-box;flex:1 1 auto;min-width:0}' +
+    '.dsh-device-link-input input{box-sizing:border-box;width:100%;min-width:0;font-family:var(--dsw-font-mono,ui-monospace,SFMono-Regular,Menlo,monospace);font-size:12px}'
+  document.head.appendChild(style)
+}
 
 function readStore(key, fallback) {
   try {
@@ -201,40 +164,11 @@ function maskToken(url) {
   return url.replace(/([?&]token=)[^&#]+/gi, (_, prefix) => prefix + '·'.repeat(12))
 }
 
-function SidebarIcon({ size = 16 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      focusable="false"
-      style={{ display: 'block' }}
-    >
-      <path
-        d="M6.6 9.4a2.4 2.4 0 0 0 3.4 0l1.9-1.9a2.4 2.4 0 0 0-3.4-3.4l-.6.6"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.4 6.6a2.4 2.4 0 0 0-3.4 0L4.1 8.5a2.4 2.4 0 0 0 3.4 3.4l.6-.6"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function DeviceLinkPanel() {
+function DeviceLinkSection() {
   const [links, setLinks] = useState([])
   const [entryId, setEntryId] = useState(() => readStore(STORE_ENTRY, 'public'))
   const [reveal, setReveal] = useState(() => readStore(STORE_REVEAL, '0') === '1')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState(true)
   const [copied, setCopied] = useState(false)
   const [failed, setFailed] = useState('')
 
@@ -255,7 +189,7 @@ function DeviceLinkPanel() {
       setFailed(
         error instanceof Error && error.message === 'no-entry'
           ? '没有找到可用的入口地址，请检查服务启动参数中的 --public-url 与 --host'
-          : '生成失败，请查看服务日志后重试',
+          : '获取失败，请查看服务日志后重试',
       )
     } finally {
       setBusy(false)
@@ -263,6 +197,7 @@ function DeviceLinkPanel() {
   }
 
   useEffect(() => {
+    ensureStyle()
     void load()
     // One-shot read on mount: the launch token is process-scoped, not time-scoped.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -290,105 +225,95 @@ function DeviceLinkPanel() {
     if (!ok) setFailed('复制失败，请手动选中链接复制')
   }
 
+  const hint =
+    active === undefined
+      ? busy
+        ? '正在获取…'
+        : '暂无可用链接'
+      : (ENTRY_HINT[active.id] ?? '')
+  const entryOptions = links.map((link) => ({
+    value: link.id,
+    label: ENTRY_LABEL[link.id] ?? '入口',
+    title: link.origin,
+  }))
+
   return (
-    <div style={PAGE}>
-      <div style={COLUMN}>
-        <h1 style={HEADING}>新设备登录</h1>
-        <p style={LEAD}>
-          生成一个带登录令牌的链接。在手机或平板浏览器打开即可登录，无需在服务器上操作。
-        </p>
+    <div style={SECTION}>
+      <h2 style={TITLE}>新设备登录</h2>
+      <p style={INTRO}>
+        生成带登录令牌的链接，在手机或平板的浏览器里打开即可登录，不必去服务器上操作。
+      </p>
 
-        {links.length > 1 && (
-          <section style={SECTION}>
-            <div style={LEGEND}>入口地址</div>
-            <div style={CHOICE_LIST}>
-              {links.map((link, index) => {
-                const selected = link.id === active?.id
-                return (
-                  <label key={link.id} style={choiceStyle(selected, index === links.length - 1)}>
-                    <input
-                      type="radio"
-                      name="device-link-entry"
-                      checked={selected}
-                      onChange={() => {
-                        setEntryId(link.id)
-                        setCopied(false)
-                      }}
-                      style={RADIO}
-                    />
-                    <span style={CHOICE_BODY}>
-                      <span style={CHOICE_TITLE}>{ENTRY_LABEL[link.id] ?? '入口'}</span>
-                      <span style={CHOICE_ORIGIN}>{link.origin}</span>
-                      {ENTRY_HINT[link.id] !== undefined && (
-                        <span style={CHOICE_HINT}>{ENTRY_HINT[link.id]}</span>
-                      )}
-                    </span>
-                  </label>
-                )
-              })}
-            </div>
-          </section>
-        )}
-
-        <section style={SECTION}>
-          <div style={LEGEND}>登录链接</div>
-          {active !== undefined ? (
-            <>
-              <div style={LINK_BOX}>
-                <input
-                  readOnly
-                  value={shown}
-                  onFocus={(event) => event.target.select()}
-                  aria-label="新设备登录链接"
-                  style={INPUT}
-                />
-                <button type="button" onClick={copy} style={buttonStyle(false)}>
-                  {copied ? '已复制' : '复制'}
-                </button>
-              </div>
-              <div style={META_ROW}>
-                <label style={TOGGLE}>
-                  <input
-                    type="checkbox"
-                    checked={reveal}
-                    onChange={(event) => setReveal(event.target.checked)}
-                  />
-                  显示完整令牌
-                </label>
-                <button
-                  type="button"
-                  onClick={() => void load()}
-                  disabled={busy}
-                  style={buttonStyle(true)}
-                >
-                  {busy ? '生成中…' : '重新生成'}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div style={LINK_BOX}>
-              <button
-                type="button"
-                onClick={() => void load()}
-                disabled={busy}
-                style={buttonStyle(true)}
-              >
-                {busy ? '生成中…' : '生成链接'}
-              </button>
-            </div>
-          )}
-          {failed !== '' && (
-            <div role="alert" style={ERROR}>
-              {failed}
-            </div>
-          )}
-        </section>
-
-        <div style={FOOTNOTE}>
-          令牌等同于服务器控制权，请勿转发给他人。链接随服务重启而失效，届时重新生成即可；
-          浏览器登录后会换取长期 Cookie，不必每次使用链接。
+      {links.length > 1 && (
+        <div style={ROW}>
+          <div>
+            <div style={ROW_TITLE}>入口地址</div>
+            <div style={ROW_DESC}>公网供外网访问，局域网在同一 Wi-Fi 下更快</div>
+          </div>
+          <SegmentedControl
+            id="device-link-entry"
+            label="入口地址"
+            value={active?.id}
+            options={entryOptions}
+            onChange={(next) => {
+              setEntryId(String(next))
+              setCopied(false)
+            }}
+          />
         </div>
+      )}
+
+      <div style={FIELD}>
+        <div>
+          <div style={ROW_TITLE}>登录链接</div>
+          {hint !== '' && <div style={ROW_DESC}>{hint}</div>}
+        </div>
+        <div style={LINK_BOX}>
+          <Input
+            className="dsh-device-link-input"
+            readOnly
+            value={shown}
+            aria-label="新设备登录链接"
+            onFocus={(event) => event.target.select()}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={active === undefined || busy}
+            onClick={() => void copy()}
+          >
+            {copied ? '已复制' : '复制'}
+          </Button>
+        </div>
+        {failed !== '' && (
+          <p role="alert" style={ERROR}>
+            {failed}
+          </p>
+        )}
       </div>
+
+      <div style={ROW}>
+        <div>
+          <div style={ROW_TITLE}>显示完整令牌</div>
+          <div style={ROW_DESC}>关闭时令牌打码，方便截图或投屏</div>
+        </div>
+        <Switch checked={reveal} label="显示完整令牌" onChange={setReveal} />
+      </div>
+
+      <div style={ROW_LAST}>
+        <div>
+          <div style={ROW_TITLE}>重新获取</div>
+          <div style={ROW_DESC}>服务重启后令牌会变化，点此刷新</div>
+        </div>
+        <Button variant="outline" size="sm" disabled={busy} onClick={() => void load()}>
+          {busy ? '获取中…' : '刷新'}
+        </Button>
+      </div>
+
+      <p style={FOOTNOTE}>
+        令牌等同于服务器控制权，请勿转发给他人。链接随服务重启而失效，届时点「刷新」即可；
+        浏览器登录后会换取长期 Cookie，不必每次都用链接。
+      </p>
     </div>
   )
 }
@@ -396,25 +321,16 @@ function DeviceLinkPanel() {
 export const inject = ['slots']
 
 export function apply(ctx) {
-  ctx.slots.inject('sidebar.panellist', () =>
+  ctx.slots.inject('settings.section', () =>
     ctx.slots.register(
       {
-        name: 'sidebar.panellist',
-        id: PANEL_ID,
-        order: 20,
+        name: 'settings.section',
+        id: SECTION_ID,
+        // Between agent-presets (20) and third-party sections (40+).
+        order: 30,
         label: () => '新设备登录',
       },
-      SidebarIcon,
-    ),
-  )
-
-  ctx.slots.inject('main', () =>
-    ctx.slots.register(
-      {
-        name: 'main',
-        key: PANEL_ID,
-      },
-      DeviceLinkPanel,
+      DeviceLinkSection,
     ),
   )
 }

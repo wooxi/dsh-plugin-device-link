@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-device-link",
-  "version": "1.1.0",
-  "description": "A sidebar panel that mints tokenized login links for new devices — pick a public or LAN entry point, copy, and log in from a phone without touching a terminal.",
+  "version": "1.2.0",
+  "description": "A settings section that mints tokenized login links for new devices — pick a public or LAN entry point, copy, and log in from a phone without touching a terminal.",
   "type": "module",
   "main": "index.js",
   "exports": {

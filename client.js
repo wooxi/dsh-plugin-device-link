@@ -29,8 +29,10 @@ __export(client_exports, {
 });
 module.exports = __toCommonJS(client_exports);
 var import_react = require("react");
+var import_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 var import_jsx_runtime = require("react/jsx-runtime");
-var PANEL_ID = "device-link";
+var SECTION_ID = "device-link";
+var STYLE_ID = "dsh-plugin-device-link";
 var STORE_ENTRY = "dsh.device-link.entry";
 var STORE_REVEAL = "dsh.device-link.reveal";
 var ENTRY_LABEL = {
@@ -43,113 +45,61 @@ var ENTRY_HINT = {
   lan: "同一 Wi-Fi 下直连，速度更快",
   local: "仅本机可访问"
 };
-var PAGE = {
-  height: "100%",
-  overflowY: "auto",
-  boxSizing: "border-box",
-  padding: "40px 24px 64px"
-};
-var COLUMN = { maxWidth: 720, margin: "0 auto" };
-var HEADING = { margin: 0, fontSize: 20, lineHeight: "26px", fontWeight: 600 };
-var LEAD = {
-  margin: "8px 0 0",
-  color: "var(--dsw-alias-label-secondary)",
-  fontSize: 13,
-  lineHeight: "20px"
-};
-var SECTION = { marginTop: 32 };
-var LEGEND = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--dsw-alias-label-secondary)",
-  letterSpacing: "0.01em",
-  marginBottom: 8
-};
-var CHOICE_LIST = {
-  border: "0.5px solid var(--dsw-alias-border-l2)",
-  borderRadius: 10,
-  overflow: "hidden"
-};
-var choiceStyle = (selected, last) => ({
+var SECTION = {
   display: "flex",
-  alignItems: "flex-start",
+  flexDirection: "column",
   gap: 12,
-  padding: "12px 14px",
-  cursor: "pointer",
-  background: selected ? "var(--dsw-alias-bg-l2)" : "transparent",
-  borderBottom: last ? "none" : "0.5px solid var(--dsw-alias-border-l2)"
-});
-var RADIO = { marginTop: 3, flex: "none", cursor: "pointer" };
-var CHOICE_BODY = { minWidth: 0, flex: 1, display: "block" };
-var CHOICE_TITLE = { display: "block", fontSize: 13, lineHeight: "18px" };
-var CHOICE_ORIGIN = {
-  display: "block",
-  marginTop: 2,
-  fontSize: 12,
-  lineHeight: "18px",
-  color: "var(--dsw-alias-label-secondary)",
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap"
+  maxWidth: 720,
+  color: "var(--dsw-alias-label-primary)"
 };
-var CHOICE_HINT = {
-  display: "block",
-  marginTop: 2,
-  fontSize: 12,
-  lineHeight: "18px",
-  color: "var(--dsw-alias-label-secondary)"
-};
-var LINK_BOX = { display: "flex", alignItems: "stretch", gap: 8, marginTop: 12 };
-var INPUT = {
-  flex: 1,
-  minWidth: 0,
-  padding: "8px 10px",
-  fontSize: 12,
-  lineHeight: "18px",
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  color: "inherit",
-  background: "var(--dsw-alias-bg-base)",
-  border: "0.5px solid var(--dsw-alias-border-l2)",
-  borderRadius: 8
-};
-var buttonStyle = (primary) => ({
-  flex: "none",
-  padding: "8px 14px",
+var TITLE = { margin: 0, fontSize: 18, fontWeight: 600 };
+var INTRO = {
+  margin: 0,
   fontSize: 13,
-  lineHeight: "18px",
-  fontWeight: 500,
-  cursor: "pointer",
-  borderRadius: 8,
-  border: primary ? "none" : "0.5px solid var(--dsw-alias-border-l2)",
-  color: primary ? "#fff" : "inherit",
-  background: primary ? "var(--dsw-alias-accent, #3b6cf6)" : "transparent"
-});
-var META_ROW = {
+  lineHeight: "20px",
+  color: "var(--dsw-alias-label-tertiary)"
+};
+var ROW = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  gap: 16,
-  marginTop: 10,
-  flexWrap: "wrap"
+  gap: 24,
+  padding: "16px 0",
+  borderBottom: "0.5px solid var(--dsw-alias-border-l2)"
 };
-var TOGGLE = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
+var ROW_LAST = { ...ROW, borderBottom: "none", paddingBottom: 0 };
+var ROW_TITLE = { fontSize: 14, lineHeight: "20px" };
+var ROW_DESC = {
+  marginTop: 4,
   fontSize: 12,
-  color: "var(--dsw-alias-label-secondary)",
-  cursor: "pointer"
-};
-var FOOTNOTE = {
-  marginTop: 28,
-  paddingTop: 20,
-  borderTop: "0.5px solid var(--dsw-alias-border-l2)",
-  fontSize: 12,
-  lineHeight: "20px",
+  lineHeight: "18px",
   color: "var(--dsw-alias-label-secondary)"
 };
-var ERROR = { marginTop: 10, fontSize: 12, color: "var(--dsw-alias-label-error, #d33)" };
+var FIELD = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  padding: "16px 0",
+  borderBottom: "0.5px solid var(--dsw-alias-border-l2)"
+};
+var LINK_BOX = { display: "flex", alignItems: "center", gap: 8 };
+var FOOTNOTE = {
+  margin: 0,
+  fontSize: 12,
+  lineHeight: "20px",
+  color: "var(--dsw-alias-label-tertiary)"
+};
+var ERROR = { margin: 0, fontSize: 12, color: "var(--dsw-alias-state-error-primary)" };
+function ensureStyle() {
+  if (typeof document === "undefined") return;
+  if (document.querySelector(`style[data-plugin=${JSON.stringify(STYLE_ID)}]`) !== null) return;
+  const style = document.createElement("style");
+  style.dataset.plugin = STYLE_ID;
+  style.textContent = // `flex: 1`, not `width: 100%`: the field shares a flex row with its copy
+  // button and must claim the leftover space without pushing the button out.
+  ".dsh-device-link-input{box-sizing:border-box;flex:1 1 auto;min-width:0}.dsh-device-link-input input{box-sizing:border-box;width:100%;min-width:0;font-family:var(--dsw-font-mono,ui-monospace,SFMono-Regular,Menlo,monospace);font-size:12px}";
+  document.head.appendChild(style);
+}
 function readStore(key, fallback) {
   try {
     const value = window.localStorage.getItem(key);
@@ -189,47 +139,11 @@ async function copyText(text) {
 function maskToken(url) {
   return url.replace(/([?&]token=)[^&#]+/gi, (_, prefix) => prefix + "·".repeat(12));
 }
-function SidebarIcon({ size = 16 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-    "svg",
-    {
-      width: size,
-      height: size,
-      viewBox: "0 0 16 16",
-      fill: "none",
-      "aria-hidden": "true",
-      focusable: "false",
-      style: { display: "block" },
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "path",
-          {
-            d: "M6.6 9.4a2.4 2.4 0 0 0 3.4 0l1.9-1.9a2.4 2.4 0 0 0-3.4-3.4l-.6.6",
-            stroke: "currentColor",
-            strokeWidth: "1.3",
-            strokeLinecap: "round",
-            strokeLinejoin: "round"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "path",
-          {
-            d: "M9.4 6.6a2.4 2.4 0 0 0-3.4 0L4.1 8.5a2.4 2.4 0 0 0 3.4 3.4l.6-.6",
-            stroke: "currentColor",
-            strokeWidth: "1.3",
-            strokeLinecap: "round",
-            strokeLinejoin: "round"
-          }
-        )
-      ]
-    }
-  );
-}
-function DeviceLinkPanel() {
+function DeviceLinkSection() {
   const [links, setLinks] = (0, import_react.useState)([]);
   const [entryId, setEntryId] = (0, import_react.useState)(() => readStore(STORE_ENTRY, "public"));
   const [reveal, setReveal] = (0, import_react.useState)(() => readStore(STORE_REVEAL, "0") === "1");
-  const [busy, setBusy] = (0, import_react.useState)(false);
+  const [busy, setBusy] = (0, import_react.useState)(true);
   const [copied, setCopied] = (0, import_react.useState)(false);
   const [failed, setFailed] = (0, import_react.useState)("");
   const load = async () => {
@@ -246,13 +160,14 @@ function DeviceLinkPanel() {
       setEntryId((current) => next.some((link) => link.id === current) ? current : next[0].id);
     } catch (error) {
       setFailed(
-        error instanceof Error && error.message === "no-entry" ? "没有找到可用的入口地址，请检查服务启动参数中的 --public-url 与 --host" : "生成失败，请查看服务日志后重试"
+        error instanceof Error && error.message === "no-entry" ? "没有找到可用的入口地址，请检查服务启动参数中的 --public-url 与 --host" : "获取失败，请查看服务日志后重试"
       );
     } finally {
       setBusy(false);
     }
   };
   (0, import_react.useEffect)(() => {
+    ensureStyle();
     void load();
   }, []);
   (0, import_react.useEffect)(() => {
@@ -272,111 +187,93 @@ function DeviceLinkPanel() {
     setCopied(ok);
     if (!ok) setFailed("复制失败，请手动选中链接复制");
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: PAGE, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: COLUMN, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { style: HEADING, children: "新设备登录" }),
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: LEAD, children: "生成一个带登录令牌的链接。在手机或平板浏览器打开即可登录，无需在服务器上操作。" }),
-    links.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { style: SECTION, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: LEGEND, children: "入口地址" }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: CHOICE_LIST, children: links.map((link, index) => {
-        const selected = link.id === active?.id;
-        return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { style: choiceStyle(selected, index === links.length - 1), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "input",
-            {
-              type: "radio",
-              name: "device-link-entry",
-              checked: selected,
-              onChange: () => {
-                setEntryId(link.id);
-                setCopied(false);
-              },
-              style: RADIO
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: CHOICE_BODY, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: CHOICE_TITLE, children: ENTRY_LABEL[link.id] ?? "入口" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: CHOICE_ORIGIN, children: link.origin }),
-            ENTRY_HINT[link.id] !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: CHOICE_HINT, children: ENTRY_HINT[link.id] })
-          ] })
-        ] }, link.id);
-      }) })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { style: SECTION, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: LEGEND, children: "登录链接" }),
-      active !== void 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: LINK_BOX, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "input",
-            {
-              readOnly: true,
-              value: shown,
-              onFocus: (event) => event.target.select(),
-              "aria-label": "新设备登录链接",
-              style: INPUT
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: copy, style: buttonStyle(false), children: copied ? "已复制" : "复制" })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: META_ROW, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { style: TOGGLE, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "input",
-              {
-                type: "checkbox",
-                checked: reveal,
-                onChange: (event) => setReveal(event.target.checked)
-              }
-            ),
-            "显示完整令牌"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "button",
-            {
-              type: "button",
-              onClick: () => void load(),
-              disabled: busy,
-              style: buttonStyle(true),
-              children: busy ? "生成中…" : "重新生成"
-            }
-          )
-        ] })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: LINK_BOX, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-        "button",
+  const hint = active === void 0 ? busy ? "正在获取…" : "暂无可用链接" : ENTRY_HINT[active.id] ?? "";
+  const entryOptions = links.map((link) => ({
+    value: link.id,
+    label: ENTRY_LABEL[link.id] ?? "入口",
+    title: link.origin
+  }));
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: SECTION, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { style: TITLE, children: "新设备登录" }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: INTRO, children: "生成带登录令牌的链接，在手机或平板的浏览器里打开即可登录，不必去服务器上操作。" }),
+    links.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: ROW, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: ROW_TITLE, children: "入口地址" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: ROW_DESC, children: "公网供外网访问，局域网在同一 Wi-Fi 下更快" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+        import_dsh_client_ui_primitives.SegmentedControl,
         {
-          type: "button",
-          onClick: () => void load(),
-          disabled: busy,
-          style: buttonStyle(true),
-          children: busy ? "生成中…" : "生成链接"
+          id: "device-link-entry",
+          label: "入口地址",
+          value: active?.id,
+          options: entryOptions,
+          onChange: (next) => {
+            setEntryId(String(next));
+            setCopied(false);
+          }
         }
-      ) }),
-      failed !== "" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { role: "alert", style: ERROR, children: failed })
+      )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: FOOTNOTE, children: "令牌等同于服务器控制权，请勿转发给他人。链接随服务重启而失效，届时重新生成即可； 浏览器登录后会换取长期 Cookie，不必每次使用链接。" })
-  ] }) });
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: FIELD, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: ROW_TITLE, children: "登录链接" }),
+        hint !== "" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: ROW_DESC, children: hint })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: LINK_BOX, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          import_dsh_client_ui_primitives.Input,
+          {
+            className: "dsh-device-link-input",
+            readOnly: true,
+            value: shown,
+            "aria-label": "新设备登录链接",
+            onFocus: (event) => event.target.select()
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          import_dsh_client_ui_primitives.Button,
+          {
+            variant: "outline",
+            size: "sm",
+            disabled: active === void 0 || busy,
+            onClick: () => void copy(),
+            children: copied ? "已复制" : "复制"
+          }
+        )
+      ] }),
+      failed !== "" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { role: "alert", style: ERROR, children: failed })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: ROW, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: ROW_TITLE, children: "显示完整令牌" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: ROW_DESC, children: "关闭时令牌打码，方便截图或投屏" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_dsh_client_ui_primitives.Switch, { checked: reveal, label: "显示完整令牌", onChange: setReveal })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: ROW_LAST, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: ROW_TITLE, children: "重新获取" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: ROW_DESC, children: "服务重启后令牌会变化，点此刷新" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_dsh_client_ui_primitives.Button, { variant: "outline", size: "sm", disabled: busy, onClick: () => void load(), children: busy ? "获取中…" : "刷新" })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: FOOTNOTE, children: "令牌等同于服务器控制权，请勿转发给他人。链接随服务重启而失效，届时点「刷新」即可； 浏览器登录后会换取长期 Cookie，不必每次都用链接。" })
+  ] });
 }
 var inject = ["slots"];
 function apply(ctx) {
   ctx.slots.inject(
-    "sidebar.panellist",
+    "settings.section",
     () => ctx.slots.register(
       {
-        name: "sidebar.panellist",
-        id: PANEL_ID,
-        order: 20,
+        name: "settings.section",
+        id: SECTION_ID,
+        // Between agent-presets (20) and third-party sections (40+).
+        order: 30,
         label: () => "新设备登录"
       },
-      SidebarIcon
-    )
-  );
-  ctx.slots.inject(
-    "main",
-    () => ctx.slots.register(
-      {
-        name: "main",
-        key: PANEL_ID
-      },
-      DeviceLinkPanel
+      DeviceLinkSection
     )
   );
 }

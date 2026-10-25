@@ -1,12 +1,14 @@
 # dsh-plugin-device-link
 
-A sidebar panel that mints tokenized login links for new devices — pick a public or LAN entry point, copy, and log in from a phone without touching a terminal.
+A settings section that mints tokenized login links for new devices — pick a public or LAN entry point, copy, and log in from a phone without touching a terminal.
 
 ## What it does
 
-Adds a **新设备登录 (New Device Login)** entry to the sidebar rail. Open it to get a fully-authenticated URL you can paste into any phone or tablet browser.
+Adds a **新设备登录 (New Device Login)** page to the **Settings** panel, in the same nav list as General / Models / Plugins. Open it to get a fully-authenticated URL you can paste into any phone or tablet browser.
 
-The panel exposes the decisions that used to live in shell flags:
+Because it registers on the host's `settings.section` slot and builds its controls from host primitives (`Button`, `Input`, `SegmentedControl`, `Switch`), it inherits the active theme and typography — light or dark, and the same body font as every shipped settings page.
+
+The section exposes the decisions that used to live in shell flags:
 
 | Option | Why it matters |
 |---|---|
@@ -14,7 +16,7 @@ The panel exposes the decisions that used to live in shell flags:
 | **Reveal token** | The link is masked by default so it can be shown on screen or in a screenshot without leaking the token. |
 | **Remembered choice** | The last entry point and reveal setting persist in `localStorage`. |
 
-The entry picker only appears when more than one reachable root exists — a loopback-only deployment shows just the single link.
+The entry picker (a segmented control) only appears when more than one reachable root exists — a loopback-only deployment shows just the single link.
 
 ## Install
 
@@ -22,7 +24,7 @@ The entry picker only appears when more than one reachable root exists — a loo
 dsh plugin add dsh-plugin-device-link
 ```
 
-Refresh the browser afterwards: the sidebar icon appears once the plugin loads.
+Reload the browser afterwards: the section appears in Settings once the plugin loads.
 
 ## How it works
 
@@ -37,7 +39,7 @@ Refresh the browser afterwards: the sidebar icon appears once the plugin loads.
 ## Security notes
 
 - The link carries a token equivalent to full owner access. Do not share it with others.
-- The panel masks the token by default; "显示完整令牌" reveals it for copying by hand.
+- The section masks the token by default; "显示完整令牌" reveals it for copying by hand.
 - A restart invalidates the link immediately — regenerate it afterwards.
 
 ## Compatibility
